@@ -3,101 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mente Sana · Plataforma de Psicología</title>
-  <meta name="description" content="Conecta con psicólogos certificados. Sesiones online seguras y confidenciales." />
+  <title>MenteGest · Gestión para psicólogos</title>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
 </head>
 <body>
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="logo">🧠 Mente Sana</div>
-    <div class="nav-links">
-      <a href="#psicologos">Psicólogos</a>
-      <a href="#como">Cómo funciona</a>
-      <button id="btnLogin" class="btn-outline">Iniciar sesión</button>
-      <button id="btnRegister" class="btn-primary">Registrarse</button>
-      <button id="btnDashboard" class="btn-outline hidden">Mis citas</button>
-      <button id="btnLogout" class="btn-outline hidden">Salir</button>
-    </div>
-  </nav>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">🧠 <span>MenteGest</span></div>
+      <nav class="menu">
+        <a href="#/dashboard" data-view="dashboard"><span>📊</span> Dashboard</a>
+        <a href="#/agenda" data-view="agenda"><span>📅</span> Agenda</a>
+        <a href="#/pacientes" data-view="pacientes"><span>👥</span> Pacientes</a>
+        <a href="#/notas" data-view="notas"><span>📝</span> Notas de sesión</a>
+        <a href="#/finanzas" data-view="finanzas"><span>💰</span> Finanzas</a>
+        <a href="#/config" data-view="config"><span>⚙️</span> Configuración</a>
+      </nav>
+      <div class="sidebar-footer">
+        <small>Datos guardados localmente 🔒</small>
+      </div>
+    </aside>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Tu bienestar mental,<br><span>a un clic de distancia</span></h1>
-      <p>Conecta con psicólogos certificados. Sesiones online seguras, confidenciales y a tu ritmo.</p>
-      <button class="btn-primary btn-lg" onclick="scrollToPsicologos()">Encontrar mi psicólogo</button>
-    </div>
-    <div class="hero-illustration">🧠💬</div>
-  </section>
-
-  <!-- PSICÓLOGOS -->
-  <section id="psicologos" class="section">
-    <h2>Nuestros especialistas</h2>
-    <p class="subtitle">Profesionales verificados y con experiencia</p>
-    <div id="listaPsicologos" class="grid"></div>
-  </section>
-
-  <!-- CÓMO FUNCIONA -->
-  <section id="como" class="section how">
-    <h2>¿Cómo funciona?</h2>
-    <div class="steps">
-      <div class="step"><div class="num">1</div><h3>Regístrate</h3><p>Crea tu cuenta gratis en segundos.</p></div>
-      <div class="step"><div class="num">2</div><h3>Elige</h3><p>Encuentra al psicólogo ideal para ti.</p></div>
-      <div class="step"><div class="num">3</div><h3>Reserva</h3><p>Agenda una cita en el horario que prefieras.</p></div>
-      <div class="step"><div class="num">4</div><h3>Conecta</h3><p>Realiza tu sesión online desde donde estés.</p></div>
-    </div>
-  </section>
-
-  <!-- DASHBOARD -->
-  <section id="dashboard" class="section hidden">
-    <h2>Mis citas</h2>
-    <p class="subtitle">Gestiona tus reservas agendadas</p>
-    <div id="listaCitas" class="grid"></div>
-  </section>
-
-  <!-- MODAL AUTH -->
-  <div id="modalAuth" class="modal hidden">
-    <div class="modal-content">
-      <span class="close" data-close="modalAuth">&times;</span>
-      <h2 id="modalTitle">Iniciar sesión</h2>
-      <form id="authForm">
-        <input type="text" id="nombre" placeholder="Nombre completo" class="input hidden" />
-        <input type="email" id="email" placeholder="Correo electrónico" class="input" required />
-        <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)" class="input" required minlength="6" />
-        <button type="submit" class="btn-primary btn-block">Continuar</button>
-      </form>
-      <p id="authError" class="error"></p>
-    </div>
+    <!-- MAIN -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">Dashboard</h1>
+          <p id="viewSubtitle" class="muted"></p>
+        </div>
+        <div class="topbar-actions">
+          <button id="btnAccion" class="btn-primary hidden">+ Nuevo</button>
+        </div>
+      </header>
+      <section id="view" class="view"></section>
+    </main>
   </div>
 
-  <!-- MODAL CITA -->
-  <div id="modalCita" class="modal hidden">
+  <!-- MODAL GENÉRICO -->
+  <div id="modal" class="modal hidden">
     <div class="modal-content">
-      <span class="close" data-close="modalCita">&times;</span>
-      <h2>Reservar sesión</h2>
-      <p id="psicologoInfo" class="psicologo-info"></p>
-      <form id="citaForm">
-        <input type="date" id="fecha" class="input" required />
-        <input type="time" id="hora" class="input" required />
-        <textarea id="motivo" class="input" placeholder="Motivo de consulta (opcional)" rows="3"></textarea>
-        <button type="submit" class="btn-primary btn-block">Confirmar cita</button>
-      </form>
+      <span class="close" id="modalClose">&times;</span>
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
     </div>
   </div>
 
   <!-- TOAST -->
   <div id="toast" class="toast hidden"></div>
 
-  <footer class="footer">
-    <p>© <span id="year"></span> Mente Sana · Demo educativa</p>
-    <p style="font-size:.8rem;margin-top:8px;">⚠️ Este sitio es una demostración. Los datos se guardan localmente en tu navegador.</p>
-  </footer>
+  <!-- CONFIRM -->
+  <div id="confirm" class="modal hidden">
+    <div class="modal-content small">
+      <h2 id="confirmTitle">¿Estás seguro?</h2>
+      <p id="confirmMsg" class="muted"></p>
+      <div class="confirm-actions">
+        <button class="btn-outline" id="confirmNo">Cancelar</button>
+        <button class="btn-danger" id="confirmYes">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/data.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/citas.js"></script>
+  <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

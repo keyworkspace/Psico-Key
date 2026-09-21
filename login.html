@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesión · Psico-Key</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="login-body">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-logo">🧠</div>
+      <h1 class="login-title">Psico-Key</h1>
+      <p class="login-sub" id="loginSub">Tu consultorio, en orden.</p>
+
+      <div class="tabs" style="margin-bottom:20px;">
+        <button class="tab active" id="tabLogin" type="button">Iniciar sesión</button>
+        <button class="tab" id="tabRegister" type="button">Crear cuenta</button>
+      </div>
+
+      <form id="formAuth">
+        <div id="grupoNombre" class="hidden">
+          <label>Nombre completo</label>
+          <input class="input" type="text" id="nombre" placeholder="Lic. Ana Pérez">
+        </div>
+        <label>Correo electrónico</label>
+        <input class="input" type="email" id="email" placeholder="tu@email.com" required>
+        <label>Contraseña</label>
+        <input class="input" type="password" id="password" placeholder="Mínimo 6 caracteres" required minlength="6">
+        <button type="submit" class="btn-primary btn-block" id="btnSubmit" style="margin-top:8px">Entrar</button>
+      </form>
+
+      <p id="authError" class="error" style="min-height:20px;margin-top:12px;"></p>
+
+      <button class="btn-ghost btn-sm" id="btnReset" type="button" style="width:100%;margin-top:8px;">
+        ¿Olvidaste tu contraseña?
+      </button>
+    </div>
+    <p class="login-footer">🔒 Datos cifrados y privados · MenteGest © 2025</p>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

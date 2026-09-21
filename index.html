@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mente Sana · Plataforma de Psicología</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Conecta con psicólogos certificados. Sesiones online seguras y confidenciales." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
 </head>
 <body>
   <!-- NAV -->
@@ -15,6 +17,8 @@
       <a href="#como">Cómo funciona</a>
       <button id="btnLogin" class="btn-outline">Iniciar sesión</button>
       <button id="btnRegister" class="btn-primary">Registrarse</button>
+      <button id="btnDashboard" class="btn-outline hidden">Mis citas</button>
+      <button id="btnLogout" class="btn-outline hidden">Salir</button>
     </div>
   </nav>
 
@@ -46,15 +50,22 @@
     </div>
   </section>
 
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="section hidden">
+    <h2>Mis citas</h2>
+    <p class="subtitle">Gestiona tus reservas agendadas</p>
+    <div id="listaCitas" class="grid"></div>
+  </section>
+
   <!-- MODAL AUTH -->
-  <div id="modal" class="modal hidden">
+  <div id="modalAuth" class="modal hidden">
     <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
+      <span class="close" data-close="modalAuth">&times;</span>
       <h2 id="modalTitle">Iniciar sesión</h2>
       <form id="authForm">
         <input type="text" id="nombre" placeholder="Nombre completo" class="input hidden" />
         <input type="email" id="email" placeholder="Correo electrónico" class="input" required />
-        <input type="password" id="password" placeholder="Contraseña" class="input" required />
+        <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)" class="input" required minlength="6" />
         <button type="submit" class="btn-primary btn-block">Continuar</button>
       </form>
       <p id="authError" class="error"></p>
@@ -64,7 +75,7 @@
   <!-- MODAL CITA -->
   <div id="modalCita" class="modal hidden">
     <div class="modal-content">
-      <span class="close" onclick="closeCitaModal()">&times;</span>
+      <span class="close" data-close="modalCita">&times;</span>
       <h2>Reservar sesión</h2>
       <p id="psicologoInfo" class="psicologo-info"></p>
       <form id="citaForm">
@@ -76,20 +87,17 @@
     </div>
   </div>
 
-  <!-- DASHBOARD -->
-  <section id="dashboard" class="section hidden">
-    <h2>Mis citas</h2>
-    <div id="listaCitas" class="grid"></div>
-    <button id="btnLogout" class="btn-outline" style="margin-top:20px;">Cerrar sesión</button>
-  </section>
-
   <!-- TOAST -->
   <div id="toast" class="toast hidden"></div>
 
   <footer class="footer">
-    <p>© 2025 Mente Sana · Todos los derechos reservados</p>
+    <p>© <span id="year"></span> Mente Sana · Demo educativa</p>
+    <p style="font-size:.8rem;margin-top:8px;">⚠️ Este sitio es una demostración. Los datos se guardan localmente en tu navegador.</p>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/citas.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,110 +1,118 @@
 // ==========================================
-//  "Base de datos" local (localStorage)
-//  ⚠️ Todo se guarda en el navegador del usuario.
-//     No compartas el dispositivo ni uses datos reales sensibles.
+//  Datos respaldados en Firestore
+//  Estructura: usuarios/{uid}/ → { config, pacientes, citas, notas }
 // ==========================================
 
-const DB = {
-  get(key, fallback) {
-    try {
-      const raw = localStorage.getItem('mg_' + key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch { return fallback; }
-  },
-  set(key, val) { localStorage.setItem('mg_' + key, JSON.stringify(val)); },
-  remove(key) { localStorage.removeItem('mg_' + key); }
-};
+let CACHE = { config: {}, pacientes: [], citas: [], notas: [] };
+let UID = null;
+let listo = false;
 
-// ============ CONFIGURACIÓN DEL PROFESIONAL ============
+async function cargarDatos() {
+  UID = window.__uid;
+  const ref = db.collection('usuarios').doc(UID);
+  const snap = await ref.get();
+  if (snap.exists) {
+    const d = snap.data();
+    CACHE.config = d.config || CACHE.config;
+    CACHE.pacientes = d.pacientes || [];
+    CACHE.citas = d.citas || [];
+    CACHE.notas = d.notas || [];
+  }
+  listo = true;
+  document.dispatchEvent(new Event('datosListos'));
+}
+
+// Guarda todo el documento (simple y suficiente para un solo psicólogo)
+let guardando = false;
+async function persistir() {
+  if (!UID) return;
+  if (guardando) return;
+  guardando = true;
+  try {
+    await db.collection('usuarios').doc(UID).set(CACHE, { merge: true });
+  } catch (e) {
+    console.error('Error al guardar:', e);
+    if (typeof toast === 'function') toast('Error al guardar cambios', 'error');
+  } finally {
+    guardando = false;
+  }
+}
+
+// ============ CONFIG ============
 const Config = {
-  get() {
-    return DB.get('config', {
-      nombre: 'Lic. [Tu nombre]',
-      especialidad: 'Psicología clínica',
-      email: '',
-      telefono: '',
-      tarifaBase: 50,
-      moneda: '$',
-      duracionSesion: 50
-    });
-  },
-  save(data) { DB.set('config', data); }
+  get() { return CACHE.config; },
+  save(data) { CACHE.config = { ...CACHE.config, ...data }; persistir(); }
 };
 
 // ============ PACIENTES ============
 const Pacientes = {
-  all() { return DB.get('pacientes', []); },
-  save(list) { DB.set('pacientes', list); },
-  get(id) { return this.all().find(p => p.id === id); },
+  all() { return CACHE.pacientes; },
+  save(list) { CACHE.pacientes = list; persistir(); },
+  get(id) { return CACHE.pacientes.find(p => p.id === id); },
   add(data) {
-    const list = this.all();
     const p = { id: Date.now(), activo: true, createdAt: new Date().toISOString(), ...data };
-    list.push(p); this.save(list); return p;
+    CACHE.pacientes.push(p); persistir(); return p;
   },
   update(id, data) {
-    const list = this.all();
-    const i = list.findIndex(p => p.id === id);
+    const i = CACHE.pacientes.findIndex(p => p.id === id);
     if (i === -1) return null;
-    list[i] = { ...list[i], ...data };
-    this.save(list); return list[i];
+    CACHE.pacientes[i] = { ...CACHE.pacientes[i], ...data };
+    persistir(); return CACHE.pacientes[i];
   },
   remove(id) {
-    this.save(this.all().filter(p => p.id !== id));
-    // también elimina citas y notas asociadas
-    Citas.save(Citas.all().filter(c => c.pacienteId !== id));
-    Notas.save(Notas.all().filter(n => n.pacienteId !== id));
+    CACHE.pacientes = CACHE.pacientes.filter(p => p.id !== id);
+    CACHE.citas = CACHE.citas.filter(c => c.pacienteId !== id);
+    CACHE.notas = CACHE.notas.filter(n => n.pacienteId !== id);
+    persistir();
   }
 };
 
 // ============ CITAS ============
 const Citas = {
-  all() { return DB.get('citas', []); },
-  save(list) { DB.set('citas', list); },
-  get(id) { return this.all().find(c => c.id === id); },
+  all() { return CACHE.citas; },
+  save(list) { CACHE.citas = list; persistir(); },
+  get(id) { return CACHE.citas.find(c => c.id === id); },
   add(data) {
-    const list = this.all();
     const c = { id: Date.now(), estado: 'programada', pagado: false, ...data };
-    list.push(c); this.save(list); return c;
+    CACHE.citas.push(c); persistir(); return c;
   },
   update(id, data) {
-    const list = this.all();
-    const i = list.findIndex(c => c.id === id);
+    const i = CACHE.citas.findIndex(c => c.id === id);
     if (i === -1) return null;
-    list[i] = { ...list[i], ...data }; this.save(list); return list[i];
+    CACHE.citas[i] = { ...CACHE.citas[i], ...data };
+    persistir(); return CACHE.citas[i];
   },
-  remove(id) { this.save(this.all().filter(c => c.id !== id)); },
-  porFecha(fecha) { return this.all().filter(c => c.fecha === fecha && c.estado !== 'cancelada'); },
-  porPaciente(pid) { return this.all().filter(c => c.pacienteId === pid); },
+  remove(id) { CACHE.citas = CACHE.citas.filter(c => c.id !== id); persistir(); },
+  porFecha(fecha) { return CACHE.citas.filter(c => c.fecha === fecha && c.estado !== 'cancelada'); },
+  porPaciente(pid) { return CACHE.citas.filter(c => c.pacienteId === pid); },
   entreFechas(ini, fin) {
-    return this.all().filter(c => c.fecha >= ini && c.fecha <= fin && c.estado !== 'cancelada');
+    return CACHE.citas.filter(c => c.fecha >= ini && c.fecha <= fin && c.estado !== 'cancelada');
   }
 };
 
-// ============ NOTAS DE SESIÓN ============
+// ============ NOTAS ============
 const Notas = {
-  all() { return DB.get('notas', []); },
-  save(list) { DB.set('notas', list); },
-  get(id) { return this.all().find(n => n.id === id); },
+  all() { return CACHE.notas; },
+  save(list) { CACHE.notas = list; persistir(); },
+  get(id) { return CACHE.notas.find(n => n.id === id); },
   add(data) {
-    const list = this.all();
     const n = { id: Date.now(), fecha: new Date().toISOString().split('T')[0], ...data };
-    list.push(n); this.save(list); return n;
+    CACHE.notas.push(n); persistir(); return n;
   },
   update(id, data) {
-    const list = this.all();
-    const i = list.findIndex(n => n.id === id);
+    const i = CACHE.notas.findIndex(n => n.id === id);
     if (i === -1) return null;
-    list[i] = { ...list[i], ...data }; this.save(list); return list[i];
+    CACHE.notas[i] = { ...CACHE.notas[i], ...data };
+    persistir(); return CACHE.notas[i];
   },
-  remove(id) { this.save(this.all().filter(n => n.id !== id)); },
+  remove(id) { CACHE.notas = CACHE.notas.filter(n => n.id !== id); persistir(); },
   porPaciente(pid) {
-    return this.all()
-      .filter(n => n.pacienteId === pid)
+    return CACHE.notas.filter(n => n.pacienteId === pid)
       .sort((a, b) => b.fecha.localeCompare(a.fecha));
   }
 };
 
-// ============ HELPERS DE FECHAS ============
+// ============ HELPERS DE FECHAS (sin cambios) ============
 const Fecha = {
   hoy() { return new Date().toISOString().split('T')[0]; },
   format(iso) {
@@ -133,9 +141,5 @@ const Fecha = {
     const dt = new Date(y, m-1, d);
     dt.setDate(dt.getDate() + n);
     return dt.toISOString().split('T')[0];
-  },
-  mismaSemana(dateStr, lunesStr) {
-    const fin = this.addDias(lunesStr, 6);
-    return dateStr >= lunesStr && dateStr <= fin;
   }
 };

@@ -1,5 +1,5 @@
 const Auth = {
-  // Hash simple (NO seguro para producción, solo demo)
+  // Hash SHA-256 (NO seguro para producción, solo demo)
   async hash(text) {
     const enc = new TextEncoder().encode(text);
     const buf = await crypto.subtle.digest('SHA-256', enc);
